@@ -34,57 +34,21 @@
                 <button class="mode-btn" id="pvp-btn">玩家对战</button>
                 <div class="sub-options" id="pvp-options" style="display: none;">
                     <button class="pvp-mode-btn" data-mode="local">当前设备对战</button>
-                    <button class="pvp-mode-btn" data-mode="room">房间号匹配</button>
                 </div>
             </div>
             <button class="back-btn" id="back-to-game-menu">返回</button>
         </div>
     </div>
 
-    <!-- 房间号输入界面 -->
-    <div class="mode-selector" id="room-input" style="display: none;">
-        <div class="mode-selector-container">
-            <h1>输入房间号</h1>
-            <div style="margin-bottom: 20px;">
-                <input type="text" id="room-number" placeholder="请输入4位房间号" maxlength="4" style="padding: 15px; font-size: 24px; text-align: center; width: 200px; border-radius: 8px; border: 2px solid #2196F3;">
-            </div>
-            <div style="display: flex; gap: 15px; justify-content: center;">
-                <button id="join-room-btn" class="mode-btn">加入房间</button>
-                <button id="create-room-btn" class="mode-btn">创建房间</button>
-            </div>
-            <button class="back-btn" id="back-to-pvp-menu" style="margin-top: 20px;">返回</button>
-        </div>
-    </div>
 
-    <!-- 等待界面 -->
-    <div class="mode-selector" id="waiting-room" style="display: none;">
-        <div class="mode-selector-container">
-            <h2>等待房间</h2>
-            <div id="waiting-info">
-                <p>房间号: <span id="waiting-room-number"></span></p>
-                <p id="player-status">等待另一个玩家加入...</p>
-                <div id="player-readiness">
-                    <div class="player-readiness-item">
-                        <span>你 (玩家1):</span>
-                        <span id="your-readiness" class="not-ready">未准备</span>
-                    </div>
-                    <div class="player-readiness-item">
-                        <span>玩家2:</span>
-                        <span id="opponent-readiness" class="not-ready">未加入</span>
-                    </div>
-                </div>
-            </div>
-            <button id="ready-btn" class="mode-btn" style="display: none;">准备</button>
-            <button id="cancel-room-btn" class="back-btn">取消</button>
-        </div>
-    </div>
+
+
 
     <!-- 游戏界面 -->
     <div class="container" id="game-container" style="display: none;">
         <h1>五子棋游戏</h1>
         <div class="game-info">
             <div class="current-player">当前玩家: <span id="player">黑棋</span></div>
-            <div id="room-info" style="display: none;">房间号: <span id="current-room">0000</span></div>
         </div>
         <div class="game-area">
             <div class="chessboard" id="chessboard"></div>

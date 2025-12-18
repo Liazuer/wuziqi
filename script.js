@@ -218,7 +218,7 @@ class Gomoku {
         // 添加行动信息到列表
         const movesList = document.getElementById('moves-list');
         const moveItem = document.createElement('li');
-        moveItem.textContent = `${this.currentPlayer === 'black' ? '黑棋' : '白棋'}: (${row+1}, ${col+1})`;
+        moveItem.textContent = `${this.currentPlayer === 'black' ? (gameSettings.language === 'zh-CN' ? '黑棋' : 'Black') : (gameSettings.language === 'zh-CN' ? '白棋' : 'White')}: (${row+1}, ${col+1})`;
         movesList.appendChild(moveItem);
         movesList.scrollTop = movesList.scrollHeight; // 自动滚动到底部
         
@@ -767,7 +767,7 @@ class Gomoku {
         if (undoBtn) {
             // 更新悔棋按钮文本，显示已用次数/总次数
             const usedUndos = 3 - this.undoCount;
-            undoBtn.textContent = `悔棋(${usedUndos}/3)`;
+            undoBtn.textContent = `${gameSettings.language === 'zh-CN' ? '悔棋' : 'Undo'}(${usedUndos}/3)`;
             undoBtn.disabled = this.undoCount <= 0;
         }
     }
@@ -834,62 +834,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const pvpMode = btn.dataset.mode;
             if (pvpMode === 'local') {
                 startGameWithMode('pvp', 'local');
-            } else if (pvpMode === 'room') {
-                // 显示房间号输入界面
-                document.getElementById('game-mode-selector').style.display = 'none';
-                document.getElementById('room-input').style.display = 'flex';
             }
         });
-    });
-    
-    // 房间号输入界面事件
-    document.getElementById('create-room-btn').addEventListener('click', () => {
-        const roomNumber = document.getElementById('room-number').value;
-        if (validateRoomNumber(roomNumber)) {
-            createRoom(roomNumber);
-        } else {
-            alert('请输入有效的4位数字房间号！');
-        }
-    });
-    
-    document.getElementById('join-room-btn').addEventListener('click', () => {
-        const roomNumber = document.getElementById('room-number').value;
-        if (validateRoomNumber(roomNumber)) {
-            joinRoom(roomNumber);
-        } else {
-            alert('请输入有效的4位数字房间号！');
-        }
-    });
-    
-    document.getElementById('back-to-pvp-menu').addEventListener('click', () => {
-        document.getElementById('room-input').style.display = 'none';
-        document.getElementById('game-mode-selector').style.display = 'flex';
-    });
-    
-    // 准备按钮事件
-    document.getElementById('ready-btn').addEventListener('click', () => {
-        if (window.currentRoomNumber && window.currentPlayerType) {
-            markPlayerReady(window.currentRoomNumber, window.currentPlayerType);
-        }
-    });
-    
-    // 取消房间按钮事件
-    document.getElementById('cancel-room-btn').addEventListener('click', () => {
-        if (window.currentRoomNumber) {
-            cancelRoom(window.currentRoomNumber, window.currentPlayerType);
-        }
-    });
-    
-    // 房间号输入验证
-    document.getElementById('room-number').addEventListener('input', (e) => {
-        // 只允许输入数字
-        e.target.value = e.target.value.replace(/[^0-9]/g, '');
     });
     
     // 返回按钮事件
     document.getElementById('back-to-game-menu').addEventListener('click', () => {
         document.getElementById('game-mode-selector').style.display = 'none';
         document.getElementById('main-menu').style.display = 'flex';
+        // 隐藏所有下拉菜单
+        document.getElementById('difficulty-options').style.display = 'none';
+        document.getElementById('pvp-options').style.display = 'none';
     });
     
     document.getElementById('back-from-difficulty').addEventListener('click', () => {
@@ -907,357 +862,24 @@ document.addEventListener('DOMContentLoaded', () => {
 function startGame() {
     document.getElementById('main-menu').style.display = 'none';
     document.getElementById('game-mode-selector').style.display = 'flex';
+    // 隐藏所有下拉菜单，确保初始状态
+    document.getElementById('difficulty-options').style.display = 'none';
+    document.getElementById('pvp-options').style.display = 'none';
 }
 
 // 开始指定模式的游戏
 function startGameWithMode(mode, option) {
     document.getElementById('game-mode-selector').style.display = 'none';
     document.getElementById('game-container').style.display = 'block';
+    // 隐藏所有下拉菜单
+    document.getElementById('difficulty-options').style.display = 'none';
+    document.getElementById('pvp-options').style.display = 'none';
     
     // 创建新游戏实例
     new Gomoku(mode, option);
 }
 
-// 验证房间号
-function validateRoomNumber(roomNumber) {
-    return /^\d{4}$/.test(roomNumber);
-}
 
-// 创建房间
-function createRoom(roomNumber) {
-    // 清除之前的游戏数据
-    localStorage.removeItem(`gomoku_room_${roomNumber}`);
-    
-    // 存储房间信息
-    const roomData = {
-        createdBy: new Date().getTime(),
-        status: 'waiting',
-        players: {
-            player1: { color: null, ready: false, joined: true },
-            player2: { color: null, ready: false, joined: false }
-        },
-        board: null,
-        currentPlayer: null,
-        gameOver: false,
-        moveHistory: [],
-        gameStarted: false
-    };
-    try {
-        localStorage.setItem(`gomoku_room_${roomNumber}`, JSON.stringify(roomData));
-    } catch (e) {
-        console.error('Failed to create room:', e);
-        alert('无法创建房间，请检查浏览器存储权限！');
-        return;
-    }
-    
-    // 进入等待界面
-    showWaitingRoom(roomNumber, 'player1');
-}
-
-// 加入房间
-function joinRoom(roomNumber) {
-    const roomData = localStorage.getItem(`gomoku_room_${roomNumber}`);
-    if (roomData) {
-        const parsedData = JSON.parse(roomData);
-        if (parsedData.status === 'waiting') {
-            // 更新房间状态和玩家信息
-            parsedData.status = 'ready';
-            parsedData.players.player2.joined = true;
-            try {
-        localStorage.setItem(`gomoku_room_${roomNumber}`, JSON.stringify(parsedData));
-    } catch (e) {
-        console.error('Failed to join room:', e);
-        alert('无法加入房间，请检查浏览器存储权限！');
-        return;
-    }
-            
-            // 进入等待界面
-            showWaitingRoom(roomNumber, 'player2');
-        } else {
-            alert('房间已满或不存在！');
-        }
-    } else {
-        alert('房间不存在！');
-    }
-}
-
-// 显示等待房间界面
-function showWaitingRoom(roomNumber, playerType) {
-    // 隐藏其他界面
-    document.getElementById('room-input').style.display = 'none';
-    document.getElementById('game-container').style.display = 'none';
-    
-    // 显示等待界面
-    document.getElementById('waiting-room').style.display = 'flex';
-    document.getElementById('waiting-room-number').textContent = roomNumber;
-    
-    // 保存当前房间号和玩家类型到全局变量
-    window.currentRoomNumber = roomNumber;
-    window.currentPlayerType = playerType;
-    
-    // 显示准备按钮
-    document.getElementById('ready-btn').style.display = 'block';
-    
-    // 更新玩家状态
-    updateWaitingRoomUI();
-    
-    // 开始定期检查房间状态
-    window.waitingCheckInterval = setInterval(() => {
-        checkRoomStatus(roomNumber, playerType);
-    }, 500);
-}
-
-// 更新等待房间UI
-function updateWaitingRoomUI() {
-    const roomNumber = window.currentRoomNumber;
-    const playerType = window.currentPlayerType;
-    
-    // 获取房间数据
-    const roomData = localStorage.getItem(`gomoku_room_${roomNumber}`);
-    if (roomData) {
-        const parsedData = JSON.parse(roomData);
-        const readyBtn = document.getElementById('ready-btn');
-        
-        // 更新玩家2状态
-        if (parsedData.players.player2.joined) {
-            document.getElementById('opponent-readiness').textContent = parsedData.players.player2.ready ? 
-                (gameSettings.language === 'zh-CN' ? '已准备' : 'Ready') : 
-                (gameSettings.language === 'zh-CN' ? '已加入' : 'Joined');
-            document.getElementById('opponent-readiness').className = parsedData.players.player2.ready ? 'ready' : 'joined';
-            document.getElementById('waiting-info').textContent = gameSettings.language === 'zh-CN' ? '对手已加入，等待双方准备...' : 'Opponent joined, waiting for both players to ready...';
-        } else {
-            document.getElementById('opponent-readiness').textContent = gameSettings.language === 'zh-CN' ? '未加入' : 'Not joined';
-            document.getElementById('opponent-readiness').className = 'not-ready';
-            document.getElementById('waiting-info').textContent = gameSettings.language === 'zh-CN' ? '等待对手加入...' : 'Waiting for opponent to join...';
-        }
-        
-        // 更新准备状态
-        if (parsedData.players.player1.ready) {
-            document.getElementById('your-readiness').textContent = gameSettings.language === 'zh-CN' ? '已准备' : 'Ready';
-            document.getElementById('your-readiness').className = 'ready';
-            if (playerType === 'player1' && readyBtn) {
-                readyBtn.textContent = gameSettings.language === 'zh-CN' ? '取消准备' : 'Cancel Ready';
-            }
-        } else {
-            document.getElementById('your-readiness').textContent = gameSettings.language === 'zh-CN' ? '未准备' : 'Not ready';
-            document.getElementById('your-readiness').className = 'not-ready';
-            if (playerType === 'player1' && readyBtn) {
-                readyBtn.textContent = gameSettings.language === 'zh-CN' ? '准备' : 'Ready';
-            }
-        }
-        
-        if (parsedData.players.player2.ready) {
-            document.getElementById('opponent-readiness').textContent = gameSettings.language === 'zh-CN' ? '已准备' : 'Ready';
-            document.getElementById('opponent-readiness').className = 'ready';
-        }
-        
-        // 更新准备按钮显示
-        if (parsedData.players.player2.joined && readyBtn) {
-            readyBtn.style.display = 'inline-block';
-            readyBtn.disabled = false;
-        }
-    }
-}
-
-// 检查房间状态
-function checkRoomStatus(roomNumber, playerType) {
-    const roomData = localStorage.getItem(`gomoku_room_${roomNumber}`);
-    if (roomData) {
-        const parsedData = JSON.parse(roomData);
-        
-        // 更新UI
-        updateWaitingRoomUI();
-        
-        // 检查是否两个玩家都已准备
-        if (parsedData.players.player1.ready && parsedData.players.player2.ready && !parsedData.gameStarted) {
-            // 随机分配黑棋白棋
-            const colors = ['black', 'white'];
-            const randomIndex = Math.floor(Math.random() * 2);
-            parsedData.players.player1.color = colors[randomIndex];
-            parsedData.players.player2.color = colors[1 - randomIndex];
-            parsedData.currentPlayer = 'black'; // 黑棋先手
-            parsedData.gameStarted = true;
-            
-            // 更新房间数据
-            localStorage.setItem(`gomoku_room_${roomNumber}`, JSON.stringify(parsedData));
-            
-            // 清除检查间隔
-            clearInterval(window.waitingCheckInterval);
-            
-            // 开始游戏
-            startRoomGame(roomNumber, parsedData.players[playerType].color);
-        } else if (!parsedData.gameStarted) {
-            // 检查游戏是否开始（可能由另一方触发）
-            if (parsedData.gameStarted) {
-                clearInterval(window.waitingCheckInterval);
-                startRoomGame(roomNumber, parsedData.players[playerType].color);
-            }
-        }
-    } else {
-        // 房间已被删除（创建者取消）
-        alert(gameSettings.language === 'zh-CN' ? '房间已被创建者取消！' : 'Room has been canceled by the creator!');
-        cancelRoom(roomNumber, playerType);
-    }
-}
-
-// 标记玩家已准备
-function markPlayerReady(roomNumber, playerType) {
-    const roomData = localStorage.getItem(`gomoku_room_${roomNumber}`);
-    if (roomData) {
-        const parsedData = JSON.parse(roomData);
-        const readyBtn = document.getElementById('ready-btn');
-        
-        // 切换准备状态
-        const currentReadyState = parsedData.players[playerType].ready;
-        parsedData.players[playerType].ready = !currentReadyState;
-        localStorage.setItem(`gomoku_room_${roomNumber}`, JSON.stringify(parsedData));
-        
-        // 更新UI
-        if (playerType === 'player1') {
-            if (parsedData.players[playerType].ready) {
-                document.getElementById('your-readiness').textContent = gameSettings.language === 'zh-CN' ? '已准备' : 'Ready';
-                document.getElementById('your-readiness').className = 'ready';
-                readyBtn.textContent = gameSettings.language === 'zh-CN' ? '取消准备' : 'Cancel Ready';
-            } else {
-                document.getElementById('your-readiness').textContent = gameSettings.language === 'zh-CN' ? '未准备' : 'Not ready';
-                document.getElementById('your-readiness').className = 'not-ready';
-                readyBtn.textContent = gameSettings.language === 'zh-CN' ? '准备' : 'Ready';
-            }
-        } else {
-            if (parsedData.players[playerType].ready) {
-                document.getElementById('opponent-readiness').textContent = gameSettings.language === 'zh-CN' ? '已准备' : 'Ready';
-                document.getElementById('opponent-readiness').className = 'ready';
-            } else {
-                document.getElementById('opponent-readiness').textContent = gameSettings.language === 'zh-CN' ? '未准备' : 'Not ready';
-                document.getElementById('opponent-readiness').className = 'not-ready';
-            }
-        }
-        
-        // 启用按钮
-        readyBtn.disabled = false;
-        
-        // 检查双方是否都已准备
-        if (parsedData.players.player1.ready && parsedData.players.player2.ready && !parsedData.gameStarted) {
-            // 随机分配黑棋白棋
-            const colors = ['black', 'white'];
-            const randomIndex = Math.floor(Math.random() * 2);
-            parsedData.players.player1.color = colors[randomIndex];
-            parsedData.players.player2.color = colors[1 - randomIndex];
-            parsedData.currentPlayer = 'black'; // 黑棋先手
-            parsedData.gameStarted = true;
-            
-            // 初始化棋盘
-            parsedData.board = Array.from({ length: 15 }, () => Array.from({ length: 15 }, () => null));
-            
-            // 更新房间数据
-            localStorage.setItem(`gomoku_room_${roomNumber}`, JSON.stringify(parsedData));
-        }
-    }
-}
-
-// 取消房间
-function cancelRoom(roomNumber, playerType) {
-    // 清除检查间隔
-    if (window.waitingCheckInterval) {
-        clearInterval(window.waitingCheckInterval);
-        window.waitingCheckInterval = null;
-    }
-    
-    // 删除房间数据（如果是创建者）
-    const roomData = localStorage.getItem(`gomoku_room_${roomNumber}`);
-    if (roomData) {
-        const parsedData = JSON.parse(roomData);
-        if (playerType === 'player1') {
-            localStorage.removeItem(`gomoku_room_${roomNumber}`);
-        }
-    }
-    
-    // 重置全局变量
-    window.currentRoomNumber = null;
-    window.currentPlayerType = null;
-    
-    // 返回房间号输入界面
-    document.getElementById('waiting-room').style.display = 'none';
-    document.getElementById('room-input').style.display = 'flex';
-}
-
-// 开始房间游戏
-function startRoomGame(roomNumber, playerColor) {
-    // 清除检查间隔
-    if (window.waitingCheckInterval) {
-        clearInterval(window.waitingCheckInterval);
-        window.waitingCheckInterval = null;
-    }
-    
-    // 隐藏等待界面
-    document.getElementById('waiting-room').style.display = 'none';
-    document.getElementById('room-input').style.display = 'none';
-    
-    // 显示游戏界面
-    document.getElementById('game-container').style.display = 'block';
-    
-    // 显示房间信息
-    document.getElementById('room-info').style.display = 'block';
-    document.getElementById('current-room').textContent = roomNumber;
-    
-    // 创建游戏实例
-    const game = new Gomoku('pvp', 'room');
-    game.currentPlayer = playerColor;
-    game.roomNumber = roomNumber;
-    game.isRoomGame = true;
-    game.myColor = playerColor;
-    
-    // 更新玩家显示
-    document.getElementById('player').textContent = playerColor === 'black' ? 
-        (gameSettings.language === 'zh-CN' ? '黑棋' : 'Black') : 
-        (gameSettings.language === 'zh-CN' ? '白棋' : 'White');
-    
-    // 设置房间游戏的事件监听
-    setupRoomGameEvents(game);
-}
-
-// 设置房间游戏的事件监听
-function setupRoomGameEvents(game) {
-    // 定期检查对方的落子
-    const checkInterval = setInterval(() => {
-        if (game.gameOver) {
-            clearInterval(checkInterval);
-            return;
-        }
-        
-        // 只在对方回合时检查
-        if (game.currentPlayer !== game.myColor) {
-            const roomData = localStorage.getItem(`gomoku_room_${game.roomNumber}`);
-            if (roomData) {
-                const parsedData = JSON.parse(roomData);
-                // 检查是否有新的落子
-                if (parsedData.board && parsedData.currentPlayer === game.myColor) {
-                    // 更新游戏状态
-                    game.board = parsedData.board;
-                    game.currentPlayer = parsedData.currentPlayer;
-                    game.moveHistory = parsedData.moveHistory;
-                    
-                    // 重新绘制棋盘
-                    game.renderBoard();
-                    
-                    // 更新UI
-                    document.getElementById('player').textContent = game.currentPlayer === 'black' ? 
-                        (gameSettings.language === 'zh-CN' ? '黑棋' : 'Black') : 
-                        (gameSettings.language === 'zh-CN' ? '白棋' : 'White');
-                    game.updateUndoUI();
-                    
-                    // 检查游戏是否结束
-                    if (parsedData.gameOver) {
-                        game.gameOver = true;
-                        const winner = parsedData.currentPlayer === 'black' ? 'white' : 'black';
-                        game.endGame(`${winner === 'black' ? (gameSettings.language === 'zh-CN' ? '黑棋' : 'Black') : (gameSettings.language === 'zh-CN' ? '白棋' : 'White')} ${(gameSettings.language === 'zh-CN' ? '获胜！' : 'wins!')}`, null);
-                        clearInterval(checkInterval);
-                    }
-                }
-            }
-        }
-    }, 500);
-}
 
 function showLeaderboard() {
     document.getElementById('main-menu').style.display = 'none';
@@ -1316,13 +938,80 @@ function loadSettings() {
 
 // 更新界面文本（根据语言设置）
 function updateUIText() {
+    // 更新页面标题
+    document.title = gameSettings.language === 'zh-CN' ? '五子棋游戏' : 'Gomoku Game';
+    
+    // 更新主菜单文本
+    const mainMenuH1 = document.querySelector('.main-menu h1');
+    if (mainMenuH1) {
+        mainMenuH1.textContent = gameSettings.language === 'zh-CN' ? '五子棋游戏' : 'Gomoku Game';
+    }
+    
+    const menuButtons = document.querySelectorAll('.menu-btn span');
+    if (menuButtons.length >= 4) {
+        menuButtons[0].textContent = gameSettings.language === 'zh-CN' ? '开始游戏' : 'Start Game';
+        menuButtons[1].textContent = gameSettings.language === 'zh-CN' ? '排行榜' : 'Leaderboard';
+        menuButtons[2].textContent = gameSettings.language === 'zh-CN' ? '设置' : 'Settings';
+        menuButtons[3].textContent = gameSettings.language === 'zh-CN' ? '退出游戏' : 'Exit Game';
+    }
+    
+    // 更新模式选择界面文本
+    const modeSelectorH1 = document.querySelector('#game-mode-selector h1');
+    if (modeSelectorH1) {
+        modeSelectorH1.textContent = gameSettings.language === 'zh-CN' ? '选择游戏模式' : 'Select Game Mode';
+    }
+    
+    const pveBtn = document.getElementById('pve-btn');
+    if (pveBtn) {
+        pveBtn.textContent = gameSettings.language === 'zh-CN' ? '人机对战' : 'PvE';
+    }
+    
+    const pvpBtn = document.getElementById('pvp-btn');
+    if (pvpBtn) {
+        pvpBtn.textContent = gameSettings.language === 'zh-CN' ? '玩家对战' : 'PvP';
+    }
+    
+    const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+    if (difficultyBtns.length >= 3) {
+        difficultyBtns[0].textContent = gameSettings.language === 'zh-CN' ? '简单' : 'Easy';
+        difficultyBtns[1].textContent = gameSettings.language === 'zh-CN' ? '普通' : 'Normal';
+        difficultyBtns[2].textContent = gameSettings.language === 'zh-CN' ? '困难' : 'Hard';
+    }
+    
+    const pvpModeBtns = document.querySelectorAll('.pvp-mode-btn');
+    pvpModeBtns.forEach(btn => {
+        if (btn.dataset.mode === 'local') {
+            btn.textContent = gameSettings.language === 'zh-CN' ? '当前设备对战' : 'Local Game';
+        }
+    });
+    
+    const backToGameMenuBtn = document.getElementById('back-to-game-menu');
+    if (backToGameMenuBtn) {
+        backToGameMenuBtn.textContent = gameSettings.language === 'zh-CN' ? '返回' : 'Back';
+    }
+    
     // 更新游戏信息区域
+    const gameContainerH1 = document.querySelector('#game-container h1');
+    if (gameContainerH1) {
+        gameContainerH1.textContent = gameSettings.language === 'zh-CN' ? '五子棋游戏' : 'Gomoku Game';
+    }
+    
     const currentPlayerText = document.querySelector('.current-player');
     if (currentPlayerText) {
         currentPlayerText.firstChild.textContent = gameSettings.language === 'zh-CN' ? '当前玩家: ' : 'Current Player: ';
     }
     
-    // 更新按钮文本
+    const playerSpan = document.getElementById('player');
+    if (playerSpan) {
+        const currentPlayer = playerSpan.textContent;
+        if (currentPlayer === 'Black' || currentPlayer === '黑棋') {
+            playerSpan.textContent = gameSettings.language === 'zh-CN' ? '黑棋' : 'Black';
+        } else if (currentPlayer === 'White' || currentPlayer === '白棋') {
+            playerSpan.textContent = gameSettings.language === 'zh-CN' ? '白棋' : 'White';
+        }
+    }
+    
+    // 更新游戏控制按钮文本
     const resetBtn = document.getElementById('reset-btn');
     if (resetBtn) {
         resetBtn.textContent = gameSettings.language === 'zh-CN' ? '重新开始' : 'Restart';
@@ -1352,7 +1041,54 @@ function updateUIText() {
     if (playAgainBtn) {
         playAgainBtn.textContent = gameSettings.language === 'zh-CN' ? '再玩一次' : 'Play Again';
     }
+    
+    const moveHistoryH3 = document.querySelector('.move-history h3');
+    if (moveHistoryH3) {
+        moveHistoryH3.textContent = gameSettings.language === 'zh-CN' ? '行动信息' : 'Move History';
+    }
+    
+    // 更新排行榜界面文本
+    const leaderboardH1 = document.querySelector('#leaderboard h1');
+    if (leaderboardH1) {
+        leaderboardH1.textContent = gameSettings.language === 'zh-CN' ? '排行榜' : 'Leaderboard';
+    }
+    
+    // 更新设置界面文本
+    const settingsH1 = document.querySelector('#settings h1');
+    if (settingsH1) {
+        settingsH1.textContent = gameSettings.language === 'zh-CN' ? '设置' : 'Settings';
+    }
+    
+    const boardSizeLabel = document.querySelector('label[for="board-size"]');
+    if (boardSizeLabel) {
+        boardSizeLabel.textContent = gameSettings.language === 'zh-CN' ? '棋盘尺寸:' : 'Board Size:';
+    }
+    
+    const languageLabel = document.querySelector('label[for="language"]');
+    if (languageLabel) {
+        languageLabel.textContent = gameSettings.language === 'zh-CN' ? '语言:' : 'Language:';
+    }
+    
+    const saveBtn = document.querySelector('.save-btn');
+    if (saveBtn) {
+        saveBtn.textContent = gameSettings.language === 'zh-CN' ? '保存设置' : 'Save Settings';
+    }
+    
+    // 更新所有返回按钮
+    const backBtns = document.querySelectorAll('.back-btn');
+    backBtns.forEach(btn => {
+        // 除了游戏模式选择界面的返回按钮（已单独处理），其他返回按钮统一更新
+        if (btn.id !== 'back-to-game-menu') {
+            btn.textContent = gameSettings.language === 'zh-CN' ? '返回主菜单' : 'Main Menu';
+        }
+    });
 }
+
+// 页面加载完成后初始化
+window.addEventListener('DOMContentLoaded', () => {
+    loadSettings(); // 加载保存的设置
+    updateUIText(); // 更新所有界面文本
+});
 
 // 更新排行榜
 function updateLeaderboard(winner, gameTime) {
