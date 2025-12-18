@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五子棋游戏</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 主界面 -->
+    <div class="main-menu" id="main-menu">
+        <div class="menu-container">
+            <h1>五子棋游戏</h1>
+            <div class="menu-buttons">
+                <button class="menu-btn" onclick="startGame()"><span>开始游戏</span></button>
+                <button class="menu-btn" onclick="showLeaderboard()"><span>排行榜</span></button>
+                <button class="menu-btn" onclick="showSettings()"><span>设置</span></button>
+                <button class="menu-btn" onclick="exitGame()"><span>退出游戏</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏模式选择界面 -->
+    <div class="mode-selector" id="game-mode-selector" style="display: none;">
+        <div class="mode-selector-container">
+            <h1>选择游戏模式</h1>
+            <div class="mode-buttons">
+                <button class="mode-btn" id="pve-btn">人机对战</button>
+                <div class="sub-options" id="difficulty-options" style="display: none;">
+                    <button class="difficulty-btn" data-difficulty="easy">简单</button>
+                    <button class="difficulty-btn" data-difficulty="normal">普通</button>
+                    <button class="difficulty-btn" data-difficulty="hard">困难</button>
+                </div>
+                <button class="mode-btn" id="pvp-btn">玩家对战</button>
+                <div class="sub-options" id="pvp-options" style="display: none;">
+                    <button class="pvp-mode-btn" data-mode="local">当前设备对战</button>
+                    <button class="pvp-mode-btn" data-mode="room">房间号匹配</button>
+                </div>
+            </div>
+            <button class="back-btn" id="back-to-game-menu">返回</button>
+        </div>
+    </div>
+
+    <!-- 房间号输入界面 -->
+    <div class="mode-selector" id="room-input" style="display: none;">
+        <div class="mode-selector-container">
+            <h1>输入房间号</h1>
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="room-number" placeholder="请输入4位房间号" maxlength="4" style="padding: 15px; font-size: 24px; text-align: center; width: 200px; border-radius: 8px; border: 2px solid #2196F3;">
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button id="join-room-btn" class="mode-btn">加入房间</button>
+                <button id="create-room-btn" class="mode-btn">创建房间</button>
+            </div>
+            <button class="back-btn" id="back-to-pvp-menu" style="margin-top: 20px;">返回</button>
+        </div>
+    </div>
+
+    <!-- 等待界面 -->
+    <div class="mode-selector" id="waiting-room" style="display: none;">
+        <div class="mode-selector-container">
+            <h2>等待房间</h2>
+            <div id="waiting-info">
+                <p>房间号: <span id="waiting-room-number"></span></p>
+                <p id="player-status">等待另一个玩家加入...</p>
+                <div id="player-readiness">
+                    <div class="player-readiness-item">
+                        <span>你 (玩家1):</span>
+                        <span id="your-readiness" class="not-ready">未准备</span>
+                    </div>
+                    <div class="player-readiness-item">
+                        <span>玩家2:</span>
+                        <span id="opponent-readiness" class="not-ready">未加入</span>
+                    </div>
+                </div>
+            </div>
+            <button id="ready-btn" class="mode-btn" style="display: none;">准备</button>
+            <button id="cancel-room-btn" class="back-btn">取消</button>
+        </div>
+    </div>
+
+    <!-- 游戏界面 -->
+    <div class="container" id="game-container" style="display: none;">
+        <h1>五子棋游戏</h1>
+        <div class="game-info">
+            <div class="current-player">当前玩家: <span id="player">黑棋</span></div>
+            <div id="room-info" style="display: none;">房间号: <span id="current-room">0000</span></div>
+        </div>
+        <div class="game-area">
+            <div class="chessboard" id="chessboard"></div>
+            <div class="game-controls">
+                <button id="undo-btn">悔棋(0/3)</button>
+                <button id="reset-btn">重新开始</button>
+                <button id="back-to-menu">返回主菜单</button>
+            </div>
+            <div class="move-history">
+                <h3>行动信息</h3>
+                <ul id="moves-list"></ul>
+            </div>
+        </div>
+        <div class="winner-message" id="winner-message">
+            <span id="winner-text"></span>
+            <button id="play-again">再玩一次</button>
+        </div>
+    </div>
+
+    <!-- 排行榜界面 -->
+    <div class="leaderboard" id="leaderboard" style="display: none;">
+        <div class="leaderboard-container">
+            <h1>排行榜</h1>
+            <table id="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th>玩家</th>
+                        <th>胜利局数</th>
+                        <th>最短用时</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- 排行榜数据将通过JavaScript动态填充 -->
+                </tbody>
+            </table>
+            <button class="back-btn" onclick="backToMenu()">返回主菜单</button>
+        </div>
+    </div>
+
+    <!-- 设置界面 -->
+    <div class="settings" id="settings" style="display: none;">
+        <div class="settings-container">
+            <h1>设置</h1>
+            <div class="setting-item">
+                <label for="board-size">棋盘尺寸:</label>
+                <select id="board-size">
+                    <option value="15">15x15</option>
+                    <option value="19">19x19</option>
+                    <option value="13">13x13</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label for="language">语言:</label>
+                <select id="language">
+                    <option value="zh-CN">中文</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <div class="setting-buttons">
+                <button class="save-btn" onclick="saveSettings()">保存设置</button>
+                <button class="back-btn" onclick="backToMenu()">返回主菜单</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

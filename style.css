@@ -1,0 +1,710 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* 主菜单样式 */
+.main-menu {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #deb887 0%, #8b4513 100%); /* 使用木质纹理风格的渐变 */
+    position: relative;
+    overflow: hidden;
+}
+
+/* 添加装饰性棋子图案 */
+.main-menu::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background-image: 
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.1) 0%, transparent 50%);
+    animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+.menu-container {
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 50px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1;
+    backdrop-filter: blur(10px); /* 毛玻璃效果 */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.menu-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.menu-container h1 {
+    margin-bottom: 40px;
+    color: #333;
+    font-size: 48px;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    animation: titleSlideIn 1s ease-out;
+    background: linear-gradient(135deg, #4CAF50, #2196F3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+@keyframes titleSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: buttonsSlideIn 1s ease-out 0.3s forwards;
+    opacity: 0;
+}
+
+@keyframes buttonsSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.menu-btn {
+    padding: 18px 35px;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.menu-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.menu-btn:hover {
+    background: linear-gradient(135deg, #45a049, #3d8b40);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+}
+
+.menu-btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.menu-btn span {
+    position: relative;
+    z-index: 1;
+}
+
+/* 游戏模式选择样式 */
+.mode-selector {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.mode-selector-container {
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 40px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    width: 80%;
+    max-width: 500px;
+}
+
+.mode-selector-container h1 {
+    margin-bottom: 30px;
+    color: #333;
+    font-size: 32px;
+}
+
+.mode-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.mode-btn {
+    padding: 15px 30px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.3s;
+}
+
+.mode-btn:hover {
+    background-color: #0b7dda;
+}
+
+/* 子选项样式 */
+.sub-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 20px;
+}
+
+.sub-options .difficulty-btn,
+.sub-options .pvp-mode-btn {
+    padding: 10px 15px;
+    background-color: #90caf9;
+    color: #333;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.sub-options .difficulty-btn:hover,
+.sub-options .pvp-mode-btn:hover {
+    background-color: #64b5f6;
+}
+
+/* 游戏界面样式 */
+.container {
+    text-align: center;
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.container h1 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.game-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.current-player {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.game-area {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.chessboard {
+    display: inline-block;
+    background-color: #deb887; /* 木质颜色 */
+    border: 2px solid #000;
+    position: relative;
+    padding: 15px;
+    cursor: pointer;
+}
+
+/* 棋盘线样式 */
+.v-line, .h-line {
+    position: absolute;
+    background-color: #000;
+    width: 1px;
+    height: 1px;
+}
+
+.v-line {
+    width: 1px;
+    height: 100%;
+}
+
+.h-line {
+    width: 100%;
+    height: 1px;
+}
+
+.cell {
+    width: 30px;
+    height: 30px;
+    position: absolute;
+}
+
+.piece {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    z-index: 10;
+    box-sizing: border-box;
+}
+
+/* 预览棋子样式 */
+.preview {
+    opacity: 0.5;
+    z-index: 5;
+}
+
+.black {
+    background-color: black;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.white {
+    background-color: white;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.game-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 120px;
+}
+
+.game-controls button {
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#undo-btn {
+    background-color: #FF9800;
+    color: white;
+}
+
+#undo-btn:hover {
+    background-color: #F57C00;
+}
+
+#undo-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+#reset-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+#reset-btn:hover {
+    background-color: #45a049;
+}
+
+#back-to-menu {
+    background-color: #f44336;
+    color: white;
+}
+
+#back-to-menu:hover {
+    background-color: #d32f2f;
+}
+
+.move-history {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    min-width: 150px;
+}
+
+.move-history h3 {
+    margin-top: 0;
+    text-align: center;
+}
+
+#moves-list {
+    list-style-type: none;
+    padding: 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+#moves-list li {
+    padding: 5px;
+    border-bottom: 1px solid #eee;
+}
+
+#moves-list li:last-child {
+    border-bottom: none;
+}
+
+.winner-message {
+    margin-top: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    display: none;
+}
+
+.winner-message.show {
+    display: block;
+}
+
+#play-again {
+    display: block;
+    margin: 10px auto 0;
+    padding: 8px 16px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#play-again:hover {
+    background-color: #0b7dda;
+}
+
+/* 排行榜样式 */
+.leaderboard {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0;
+}
+
+.leaderboard-container {
+    background-color: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 600px;
+}
+
+.leaderboard-container h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+#leaderboard-table th,
+#leaderboard-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+}
+
+#leaderboard-table th {
+    background-color: #f2f2f2;
+}
+
+.back-btn {
+    padding: 10px 20px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    display: block;
+    margin: 0 auto;
+}
+
+.back-btn:hover {
+    background-color: #d32f2f;
+}
+
+/* 房间号输入界面样式 */
+#room-input {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.room-container {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 400px;
+    max-width: 100%;
+}
+
+.room-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.room-number-input {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.room-number-input input {
+    width: 100px;
+    height: 50px;
+    font-size: 24px;
+    text-align: center;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    margin: 0 10px;
+}
+
+.room-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.room-btn {
+    padding: 12px 24px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    font-size: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.room-btn:hover {
+    background-color: #0056b3;
+}
+
+.room-back-btn {
+    padding: 8px 16px;
+    border: none;
+    background-color: #6c757d;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.room-back-btn:hover {
+    background-color: #545b62;
+}
+
+/* 房间信息显示样式 */
+#room-info {
+    display: none;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #333;
+}
+
+#room-info span {
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* 等待房间样式 */
+#waiting-room {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+#waiting-info {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#waiting-info p {
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+#waiting-info span {
+    font-weight: bold;
+    color: #007bff;
+}
+
+#player-readiness {
+    margin-top: 20px;
+}
+
+.player-readiness-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.player-readiness-item span:first-child {
+    font-weight: bold;
+}
+
+.not-ready {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.ready {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.joined {
+    color: #007bff;
+    font-weight: bold;
+}
+
+/* 设置界面样式 */
+.settings {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0;
+}
+
+.settings-container {
+    background-color: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 400px;
+}
+
+.settings-container h1 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.setting-item {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.setting-item label {
+    font-size: 18px;
+}
+
+.setting-item select {
+    padding: 8px;
+    font-size: 16px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.setting-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.save-btn {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.save-btn:hover {
+    background-color: #45a049;
+}
+
+@media (max-width: 768px) {
+    .game-info {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .dropdown {
+        align-self: flex-end;
+    }
+    
+    .mode-selector-container {
+        width: 90%;
+        padding: 20px;
+    }
+}
