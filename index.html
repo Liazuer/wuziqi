@@ -55,6 +55,7 @@
             <div class="game-controls">
                 <button id="undo-btn">悔棋(3/3)</button>
                 <button id="reset-btn">重新开始</button>
+                <button id="rules-btn">游戏规则</button>
                 <button id="back-to-menu">返回主菜单</button>
             </div>
             <div class="move-history">
@@ -111,6 +112,32 @@
             <div class="setting-buttons">
                 <button class="save-btn" onclick="saveSettings()">保存设置</button>
                 <button class="back-btn" onclick="backToMenu()">返回主菜单</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏规则弹窗 -->
+    <div class="rules-modal" id="rules-modal" style="display: none;">
+        <div class="rules-modal-overlay"></div>
+        <div class="rules-modal-content">
+            <div class="rules-modal-header">
+                <h2>游戏规则</h2>
+            </div>
+            <div class="rules-modal-body">
+                <h3>棋盘设置</h3>
+                <p>五子棋通常在一个15x15的棋盘上进行，共有225个交叉点。棋盘的纵横线交叉形成落子点，棋子分为黑白两种，黑棋先行。</p>
+                
+                <h3>落子规则</h3>
+                <p>玩家轮流在空的交叉点放置自己的棋子。一旦棋子落下，就不能移动或移除。</p>
+                
+                <h3>胜利条件</h3>
+                <p>第一个在水平、垂直或对角线方向形成五个连续棋子的玩家获胜。</p>
+                
+                <h3>平局</h3>
+                <p>如果棋盘下满所有交叉点，仍未分出胜负，则为平局。</p>
+            </div>
+            <div class="rules-modal-footer">
+                <button class="close-btn" onclick="closeRulesModal()">关闭</button>
             </div>
         </div>
     </div>

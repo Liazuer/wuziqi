@@ -235,6 +235,12 @@ class Gomoku {
         undoBtn.onclick = () => {
             this.undoMove();
         };
+        
+        // 游戏规则按钮事件（先移除旧事件监听器）
+        const rulesBtn = document.getElementById('rules-btn');
+        rulesBtn.onclick = () => {
+            showRules();
+        };
     }
 
     placePiece(row, col) {
@@ -790,8 +796,7 @@ class Gomoku {
                 this.undoCountWhite--;
             }
             
-            // 撤销两步棋后，当前玩家需要切换回对手
-            this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
+            // 撤销两步棋后，保持当前玩家的回合不变（不需要切换玩家）
         }
         
         // 更新棋盘
@@ -1198,4 +1203,69 @@ function renderLeaderboard() {
         row.innerHTML = `<td colspan="4">${gameSettings.language === 'zh-CN' ? '暂无数据' : 'No data available'}</td>`;
         tbody.appendChild(row);
     }
+}
+
+// 显示游戏规则弹窗
+function showRules() {
+    document.getElementById('rules-modal').style.display = 'block';
+}
+
+// 关闭游戏规则弹窗
+function closeRulesModal() {
+    document.getElementById('rules-modal').style.display = 'none';
+}
+
+// 开始游戏，显示游戏模式选择界面
+function startGame() {
+    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('game-mode-selector').style.display = 'flex';
+}
+
+// 显示排行榜界面
+function showLeaderboard() {
+    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('leaderboard').style.display = 'flex';
+    renderLeaderboard();
+}
+
+// 显示设置界面
+function showSettings() {
+    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('settings').style.display = 'flex';
+}
+
+// 保存设置
+function saveSettings() {
+    const boardSize = parseInt(document.getElementById('board-size').value);
+    const language = document.getElementById('language').value;
+    
+    gameSettings.boardSize = boardSize;
+    gameSettings.language = language;
+    
+    localStorage.setItem('gomokuSettings', JSON.stringify(gameSettings));
+    
+    alert(gameSettings.language === 'zh-CN' ? '设置已保存' : 'Settings saved');
+    backToMenu();
+}
+
+// 退出游戏
+function exitGame() {
+    if (confirm(gameSettings.language === 'zh-CN' ? '确定要退出游戏吗？' : 'Are you sure you want to exit the game?')) {
+        // 在浏览器环境中，退出游戏可以是刷新页面或关闭标签页
+        // 这里我们选择刷新页面
+        location.reload();
+    }
+}
+
+// 返回主菜单
+function backToMenu() {
+    // 隐藏所有界面
+    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('game-mode-selector').style.display = 'none';
+    document.getElementById('game-container').style.display = 'none';
+    document.getElementById('leaderboard').style.display = 'none';
+    document.getElementById('settings').style.display = 'none';
+    
+    // 显示主菜单
+    document.getElementById('main-menu').style.display = 'flex';
 }
