@@ -18,14 +18,17 @@ class Gomoku {
         this.currentPlayer = 'black';
         this.gameOver = false;
         this.startTime = null;
-        this.moveHistory = []; // 记录每一步棋用于悔棋
-        this.undoCount = 3; // 全局悔棋次数（总共3次）
+        this.moveHistory = []; // 记录每一步棋
         this.mode = mode; // 游戏模式: 'pvp'(玩家对战), 'pve'(人机对战)
         this.difficulty = difficulty; // 难度: 'easy', 'normal', 'hard'
         // 房间游戏相关属性
         this.isRoomGame = false;
         this.roomNumber = null;
         this.myColor = 'black';
+        // 悔棋相关属性
+        this.undoCountBlack = 3; // 黑方剩余悔棋次数
+        this.undoCountWhite = 3; // 白方剩余悔棋次数
+        this.maxUndoCount = 3; // 最大悔棋次数
         this.init();
     }
 
@@ -35,6 +38,24 @@ class Gomoku {
         this.bindEvents();
         this.startTime = new Date();
         this.updateUndoUI(); // 更新悔棋UI
+    }
+    
+    // 更新悔棋按钮UI
+    updateUndoUI() {
+        const undoBtn = document.getElementById('undo-btn');
+        if (!undoBtn) return;
+        
+        let availableUndo = 0;
+        if (this.mode === 'pve') {
+            // 人机对战中，只有玩家（黑方）可以悔棋
+            availableUndo = this.undoCountBlack;
+        } else {
+            // 玩家对战中，当前玩家可以悔棋
+            availableUndo = this.currentPlayer === 'black' ? this.undoCountBlack : this.undoCountWhite;
+        }
+        
+        undoBtn.textContent = `悔棋(${availableUndo}/${this.maxUndoCount})`;
+        undoBtn.disabled = this.gameOver || availableUndo <= 0;
     }
 
     createBoard() {
@@ -98,8 +119,15 @@ class Gomoku {
     bindEvents() {
         const chessboard = document.getElementById('chessboard');
         
+        // 先移除所有现有的事件监听器（使用cloneNode方法是最彻底的方法）
+        const newChessboard = chessboard.cloneNode(true);
+        chessboard.parentNode.replaceChild(newChessboard, chessboard);
+        
+        // 更新chessboard引用
+        const newChessboardElement = document.getElementById('chessboard');
+        
         // 鼠标移动事件 - 显示预览棋子
-        chessboard.addEventListener('mousemove', (e) => {
+        newChessboardElement.addEventListener('mousemove', (e) => {
             if (this.gameOver) return;
             
             // 人机对战模式下，电脑回合不显示预览
@@ -127,10 +155,10 @@ class Gomoku {
                 previewPiece = document.createElement('div');
                 previewPiece.id = 'preview-piece';
                 previewPiece.className = `piece preview ${this.currentPlayer}`;
-                chessboard.appendChild(previewPiece);
+                newChessboardElement.appendChild(previewPiece);
             }
             
-            const rect = chessboard.getBoundingClientRect();
+            const rect = newChessboardElement.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             
@@ -151,7 +179,7 @@ class Gomoku {
         });
         
         // 鼠标离开事件 - 隐藏预览棋子
-        chessboard.addEventListener('mouseleave', () => {
+        newChessboardElement.addEventListener('mouseleave', () => {
             const previewPiece = document.getElementById('preview-piece');
             if (previewPiece) {
                 previewPiece.style.display = 'none';
@@ -159,10 +187,10 @@ class Gomoku {
         });
         
         // 点击事件 - 下子
-        chessboard.addEventListener('click', (e) => {
+        newChessboardElement.addEventListener('click', (e) => {
             if (this.gameOver) return;
             
-            const rect = chessboard.getBoundingClientRect();
+            const rect = newChessboardElement.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             
@@ -183,24 +211,30 @@ class Gomoku {
             }
         });
 
-        document.getElementById('reset-btn').addEventListener('click', () => {
+        // 重置按钮事件（先移除旧事件监听器）
+        const resetBtn = document.getElementById('reset-btn');
+        resetBtn.onclick = () => {
             this.resetGame();
-        });
+        };
 
-        document.getElementById('play-again').addEventListener('click', () => {
+        // 重新开始按钮事件（先移除旧事件监听器）
+        const playAgainBtn = document.getElementById('play-again');
+        playAgainBtn.onclick = () => {
             this.resetGame();
-        });
+        };
 
-        // 添加返回主菜单按钮事件
-        document.getElementById('back-to-menu').addEventListener('click', () => {
+        // 返回主菜单按钮事件（先移除旧事件监听器）
+        const backToMenuBtn = document.getElementById('back-to-menu');
+        backToMenuBtn.onclick = () => {
             document.getElementById('game-container').style.display = 'none';
             document.getElementById('main-menu').style.display = 'flex';
-        });
+        };
         
-        // 添加悔棋按钮事件
-        document.getElementById('undo-btn').addEventListener('click', () => {
+        // 悔棋按钮事件（先移除旧事件监听器）
+        const undoBtn = document.getElementById('undo-btn');
+        undoBtn.onclick = () => {
             this.undoMove();
-        });
+        };
     }
 
     placePiece(row, col) {
@@ -209,7 +243,7 @@ class Gomoku {
             return;
         }
         
-        // 记录这步棋用于悔棋
+        // 记录这步棋
         this.moveHistory.push({row, col, player: this.currentPlayer});
         
         this.board[row][col] = this.currentPlayer;
@@ -282,8 +316,6 @@ class Gomoku {
             };
             localStorage.setItem(`gomoku_room_${this.roomNumber}`, JSON.stringify(roomData));
         }
-        
-        this.updateUndoUI(); // 更新悔棋UI
     }
 
     // 电脑AI下棋
@@ -609,6 +641,9 @@ class Gomoku {
                 previewPiece.style.display = 'none';
             }
         }
+        
+        // 更新悔棋按钮UI
+        this.updateUndoUI();
     }
 
     checkWin(row, col) {
@@ -689,104 +724,105 @@ class Gomoku {
         }
     }
 
-    // 悔棋功能
+    // 悔棋方法
     undoMove() {
-        // 检查游戏是否结束或没有可悔的棋
-        if (this.gameOver || this.moveHistory.length === 0) return;
-        
-        // 检查是否还有悔棋次数
-        if (this.undoCount <= 0) {
-            alert(gameSettings.language === 'zh-CN' ? '您已经没有悔棋次数了！' : 'No more undo moves available!');
+        // 检查游戏是否结束
+        if (this.gameOver) {
             return;
         }
         
-        // 只有轮到自己的时候才能悔棋（房间游戏）
-        if (this.isRoomGame && this.currentPlayer !== this.myColor) {
+        // 检查是否有棋可悔
+        if (this.moveHistory.length === 0) {
             return;
         }
         
-        // 撤销当前玩家的上一步
-        const lastMove = this.moveHistory.pop();
-        this.board[lastMove.row][lastMove.col] = null;
-        
-        // 处理不同游戏模式的悔棋逻辑
-        if (this.mode === 'pve' && this.moveHistory.length > 0) {
-            // 人机对战模式，额外撤销电脑的一步
-            const computerMove = this.moveHistory.pop();
-            this.board[computerMove.row][computerMove.col] = null;
-        } else if (this.isRoomGame && this.moveHistory.length > 0) {
-            // 房间游戏模式，额外撤销对方的一步
-            const opponentMove = this.moveHistory.pop();
-            this.board[opponentMove.row][opponentMove.col] = null;
-            // 保持当前玩家不变，因为悔棋了两步
+        if (this.mode === 'pve') {
+            // 人机对战模式：只能黑方（玩家）悔棋
+            if (this.undoCountBlack <= 0) {
+                return;
+            }
+            
+            // 获取最后一步棋
+            const lastMove = this.moveHistory.pop();
+            this.board[lastMove.row][lastMove.col] = null;
+            
+            // 如果最后一步是AI的棋，还需要撤销玩家的一步
+            if (lastMove.player === 'white' && this.moveHistory.length > 0) {
+                const playerMove = this.moveHistory.pop();
+                this.board[playerMove.row][playerMove.col] = null;
+            }
+            
+            // 减少悔棋次数
+            this.undoCountBlack--;
         } else {
-            // 普通玩家对战模式，只撤销一步
-            this.switchPlayer();
+            // 玩家对战模式：当前玩家回合悔棋时，撤销对手刚下的那步棋和自己上一步棋
+            const currentPlayerUndoCount = this.currentPlayer === 'black' ? this.undoCountBlack : this.undoCountWhite;
+            if (currentPlayerUndoCount <= 0) {
+                return;
+            }
+            
+            // 至少需要两步棋才能悔棋（对手和自己各一步）
+            if (this.moveHistory.length < 2) {
+                return;
+            }
+            
+            // 检查最后两步棋是否符合预期：最后一步是对手的，倒数第二步是自己的
+            const lastMove = this.moveHistory[this.moveHistory.length - 1];
+            const secondLastMove = this.moveHistory[this.moveHistory.length - 2];
+            
+            // 确保最后一步是对手的棋，倒数第二步是自己的棋
+            if (lastMove.player === this.currentPlayer || secondLastMove.player !== this.currentPlayer) {
+                return;
+            }
+            
+            // 撤销最后两步棋
+            this.board[lastMove.row][lastMove.col] = null;
+            this.board[secondLastMove.row][secondLastMove.col] = null;
+            
+            // 从历史记录中移除这两步棋
+            this.moveHistory.pop();
+            this.moveHistory.pop();
+            
+            // 减少悔棋次数
+            if (this.currentPlayer === 'black') {
+                this.undoCountBlack--;
+            } else {
+                this.undoCountWhite--;
+            }
+            
+            // 撤销两步棋后，当前玩家需要切换回对手
+            this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
         }
         
-        // 悔棋次数减1
-        this.undoCount--;
-        
-        // 更新UI
+        // 更新棋盘
         this.renderBoard();
         
-        // 移除行动信息
+        // 更新行动信息列表
         const movesList = document.getElementById('moves-list');
-        if (this.mode === 'pve' || this.isRoomGame) {
-            // 人机对战或房间游戏，移除最后两条记录
-            if (movesList.lastChild) movesList.removeChild(movesList.lastChild);
-            if (movesList.lastChild) movesList.removeChild(movesList.lastChild);
-        } else {
-            // 普通玩家对战，移除最后一条记录
-            if (movesList.lastChild) movesList.removeChild(movesList.lastChild);
+        movesList.innerHTML = '';
+        for (let move of this.moveHistory) {
+            const moveItem = document.createElement('li');
+            moveItem.textContent = `${move.player === 'black' ? (gameSettings.language === 'zh-CN' ? '黑棋' : 'Black') : (gameSettings.language === 'zh-CN' ? '白棋' : 'White')}: (${move.row+1}, ${move.col+1})`;
+            movesList.appendChild(moveItem);
         }
+        movesList.scrollTop = movesList.scrollHeight;
         
+        // 更新悔棋UI
         this.updateUndoUI();
-        document.getElementById('player').textContent = this.currentPlayer === 'black' ? 
-            (gameSettings.language === 'zh-CN' ? '黑棋' : 'Black') : 
-            (gameSettings.language === 'zh-CN' ? '白棋' : 'White');
-        
-        // 更新房间游戏数据
-        if (this.isRoomGame) {
-            const roomData = {
-                createdBy: new Date().getTime(),
-                status: 'playing',
-                board: this.board,
-                currentPlayer: this.currentPlayer,
-                gameOver: false,
-                moveHistory: this.moveHistory
-            };
-            localStorage.setItem(`gomoku_room_${this.roomNumber}`, JSON.stringify(roomData));
-        }
     }
-
-    // 更新悔棋UI
-    updateUndoUI() {
-        const undoBtn = document.getElementById('undo-btn');
-        
-        if (undoBtn) {
-            // 更新悔棋按钮文本，显示已用次数/总次数
-            const usedUndos = 3 - this.undoCount;
-            undoBtn.textContent = `${gameSettings.language === 'zh-CN' ? '悔棋' : 'Undo'}(${usedUndos}/3)`;
-            undoBtn.disabled = this.undoCount <= 0;
-        }
-    }
-
+    
     resetGame() {
         this.board = [];
         this.currentPlayer = 'black';
         this.gameOver = false;
         this.moveHistory = [];
-        this.undoCount = 3; // 重置悔棋次数
+        // 重置悔棋次数
+        this.undoCountBlack = 3;
+        this.undoCountWhite = 3;
         document.getElementById('player').textContent = gameSettings.language === 'zh-CN' ? '黑棋' : 'Black';
         document.getElementById('winner-message').classList.remove('show');
         document.getElementById('moves-list').innerHTML = ''; // 清空行动信息
         
-        // 确保悔棋按钮状态正确重置
-        const undoBtn = document.getElementById('undo-btn');
-        if (undoBtn) {
-            undoBtn.disabled = false; // 确保按钮不被禁用
-        }
         
         this.init();
         

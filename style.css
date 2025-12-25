@@ -336,20 +336,6 @@ body {
     font-size: 16px;
 }
 
-#undo-btn {
-    background-color: #FF9800;
-    color: white;
-}
-
-#undo-btn:hover {
-    background-color: #F57C00;
-}
-
-#undo-btn:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-}
-
 #reset-btn {
     background-color: #4CAF50;
     color: white;
@@ -556,6 +542,29 @@ body {
 
 .room-back-btn:hover {
     background-color: #545b62;
+}
+
+/* 悔棋按钮样式 */
+#undo-btn {
+    padding: 10px 20px;
+    background-color: #FFC107;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 0 10px;
+    transition: background-color 0.3s ease;
+}
+
+#undo-btn:hover:not(:disabled) {
+    background-color: #FFA000;
+}
+
+#undo-btn:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
 }
 
 /* 房间信息显示样式 */
