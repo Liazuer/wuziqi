@@ -781,6 +781,13 @@ class Gomoku {
         document.getElementById('player').textContent = gameSettings.language === 'zh-CN' ? '黑棋' : 'Black';
         document.getElementById('winner-message').classList.remove('show');
         document.getElementById('moves-list').innerHTML = ''; // 清空行动信息
+        
+        // 确保悔棋按钮状态正确重置
+        const undoBtn = document.getElementById('undo-btn');
+        if (undoBtn) {
+            undoBtn.disabled = false; // 确保按钮不被禁用
+        }
+        
         this.init();
         
         // 更新房间游戏数据
